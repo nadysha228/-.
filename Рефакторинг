@@ -1,0 +1,89 @@
+using System;
+class Program
+{
+    static void Main()
+    {
+        // Считываем количество точек
+        int n = int.Parse(Console.ReadLine());
+
+        // Массив для хранения данных о четвертях
+        // Индекс: 0 - первая четверть, 1 - вторая, 2 - третья, 3 - четвертая
+        // Каждый элемент содержит: (количество точек, минимальное расстояние, координаты точки)
+        var quarters = new (int count, int minDistance, (int x, int y) minPoint)[4];
+
+        for (int i = 0; i < 4; i++)
+        {
+            quarters[i] = (0, int.MaxValue, (0, 0));
+        }
+
+        // Обработка входных данных
+        for (int i = 0; i < n; i++)
+        {
+            string[] line = Console.ReadLine().Split();
+            int x = int.Parse(line[0]);
+            int y = int.Parse(line[1]);
+
+            // Пропускаем точки на осях координат
+            if (x == 0 || y == 0)
+                continue;
+
+            // Определяем номер четверти (0 - первая, 1 - вторая, 2 - третья, 3 - четвертая)
+            int quarterIndex = -1;
+            if (x > 0 && y > 0) quarterIndex = 0;
+            else if (x < 0 && y > 0) quarterIndex = 1;
+            else if (x < 0 && y < 0) quarterIndex = 2;
+            else if (x > 0 && y < 0) quarterIndex = 3;
+
+            if (quarterIndex != -1)
+            {
+                // Расстояние до ближайшей оси
+                int distance = Math.Min(Math.Abs(x), Math.Abs(y));
+
+                // Обновляем данные о четверти
+                var currentQuarter = quarters[quarterIndex];
+                if (distance < currentQuarter.minDistance ||
+                    (distance == currentQuarter.minDistance && currentQuarter.minPoint == (0, 0)))
+                {
+                    quarters[quarterIndex] = (currentQuarter.count + 1, distance, (x, y));
+                }
+                else
+                {
+                    quarters[quarterIndex] = (currentQuarter.count + 1, currentQuarter.minDistance, currentQuarter.minPoint);
+                }
+            }
+        }
+
+        // Поиск лучшей четверти
+        int bestQuarterIndex = -1;
+        int maxCount = -1;
+        int minDistance = int.MaxValue;
+
+        for (int i = 0; i < 4; i++)
+        {
+            var data = quarters[i];
+            if (data.count > maxCount ||
+                (data.count == maxCount && data.minDistance < minDistance) ||
+                (data.count == maxCount && data.minDistance == minDistance && i < bestQuarterIndex))
+            {
+                bestQuarterIndex = i;
+                maxCount = data.count;
+                minDistance = data.minDistance;
+            }
+        }
+
+        // Вывод результатов
+        if (bestQuarterIndex != -1)
+        {
+            var result = quarters[bestQuarterIndex];
+            int quarterNumber = bestQuarterIndex + 1; // Переводим индекс в номер четверти
+            Console.WriteLine($"K = {quarterNumber}");
+            Console.WriteLine($"M = {result.count}");
+            Console.WriteLine($"A = ({result.minPoint.x}, {result.minPoint.y})");
+            Console.WriteLine($"R = {result.minDistance}");
+        }
+        else
+        {
+            Console.WriteLine("Нет подходящих точек");
+        }
+    }
+}
